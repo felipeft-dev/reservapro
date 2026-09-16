@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReservaPro | Sistema de Reserva Online em Tempo Real</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- HEADER / NAVEGAÇÃO -->
+    <header class="header">
+        <div class="container header-content">
+            <div class="brand">
+                <div class="logo-icon">📅</div>
+                <h1 class="logo">Reserva<span>Pro</span></h1>
+            </div>
+
+            <div class="header-right">
+                <span id="connStatus" class="conn-status conn-offline">● conectando...</span>
+                <div class="view-toggle">
+                    <button id="btnClientView" class="toggle-btn active" type="button">
+                        <span>📱</span> Agendamento Cliente
+                    </button>
+                    <button id="btnAdminView" class="toggle-btn" type="button">
+                        <span>⚙️</span> Painel do Proprietário
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+
+        <!-- VISÃO DO CLIENTE -->
+        <section id="clientSection" class="view-section active">
+
+            <div class="hero-banner">
+                <h2>Faça sua Reserva Online</h2>
+                <p>Escolha o serviço, selecione um dos horários liberados pelo estabelecimento e confirme no WhatsApp. Tudo em tempo real.</p>
+            </div>
+
+            <div class="booking-grid">
+
+                <!-- PASSO 1: SERVIÇOS -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="step-badge">1</span>
+                        <h2>Selecione o Serviço</h2>
+                    </div>
+                    <div class="services-list" id="servicesList">
+                        <p class="select-prompt">Carregando serviços...</p>
+                    </div>
+                </div>
+
+                <!-- PASSO 2: DATA E HORÁRIO LIBERADO -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="step-badge">2</span>
+                        <h2>Data e Horários Liberados</h2>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="appointmentDate">Escolha a Data</label>
+                        <input type="date" id="appointmentDate" required>
+                    </div>
+
+                    <div class="slots-header">
+                        <h3>Horários Abertos pela Empresa</h3>
+                        <span id="slotCountBadge" class="badge">0 livres</span>
+                    </div>
+
+                    <div class="slots-grid" id="slotsGrid">
+                        <p class="select-prompt">Selecione uma data para consultar a disponibilidade em tempo real.</p>
+                    </div>
+                </div>
+
+                <!-- PASSO 3: CHECKOUT -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="step-badge">3</span>
+                        <h2>Seus Dados</h2>
+                    </div>
+
+                    <form id="bookingForm">
+                        <div class="form-group">
+                            <label for="clientName">Nome Completo *</label>
+                            <input type="text" id="clientName" placeholder="Ex: Lucas Silva" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="clientPhone">WhatsApp com DDD *</label>
+                            <input type="tel" id="clientPhone" placeholder="(00) 00000-0000" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="bookingNotes">Observações (Opcional)</label>
+                            <textarea id="bookingNotes" rows="2" placeholder="Alguma preferência?"></textarea>
+                        </div>
+
+                        <div class="summary-box">
+                            <div class="summary-row">
+                                <span>Serviço:</span>
+                                <strong id="summaryService">Nenhum</strong>
+                            </div>
+                            <div class="summary-row">
+                                <span>Data/Hora:</span>
+                                <strong id="summaryTime">--:--</strong>
+                            </div>
+                            <div class="summary-row total-row">
+                                <span>Valor Total:</span>
+                                <strong id="summaryPrice">R$ 0,00</strong>
+                            </div>
+                        </div>
+
+                        <p id="bookingError" class="error-text"></p>
+
+                        <button type="submit" id="btnConfirmBooking" class="primary-btn" disabled>
+                            <span id="btnConfirmLabel">Enviar Pedido no WhatsApp</span>
+                            <span class="btn-icon">→</span>
+                        </button>
+                    </form>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- PAINEL DO PROPRIETÁRIO (ADMIN) -->
+        <section id="adminSection" class="view-section hidden">
+
+            <!-- TELA DE LOGIN -->
+            <div id="adminLogin" class="card login-card">
+                <div class="card-header">
+                    <span class="step-badge">🔒</span>
+                    <h2>Acesso Restrito</h2>
+                </div>
+                <p class="help-text">Entre com a conta de administrador cadastrada no Firebase para gerenciar horários, serviços e agendamentos.</p>
+                <form id="loginForm" style="margin-top: 16px;">
+                    <div class="form-group">
+                        <label for="adminEmail">E-mail</label>
+                        <input type="email" id="adminEmail" required autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label for="adminPassword">Senha</label>
+                        <input type="password" id="adminPassword" required autocomplete="current-password">
+                    </div>
+                    <p id="loginError" class="error-text"></p>
+                    <button type="submit" class="primary-btn"><span>Entrar</span></button>
+                </form>
+            </div>
+
+            <!-- PAINEL (VISÍVEL APÓS LOGIN) -->
+            <div id="adminPanel" class="hidden">
+
+                <div class="admin-header">
+                    <div>
+                        <h2>Painel do Proprietário</h2>
+                        <p>Dados sincronizados em nuvem com o site do cliente em tempo real.</p>
+                    </div>
+                    <div class="admin-actions">
+                        <button id="btnLogout" class="secondary-btn danger">Sair da Conta</button>
+                    </div>
+                </div>
+
+                <div class="admin-grid">
+
+                    <!-- GESTÃO DE HORÁRIOS -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="step-badge">🗓️</span>
+                            <h2>Gerenciar Horários</h2>
+                        </div>
+                        <p class="help-text">Selecione uma data e clique nos horários para abrir ou fechar o atendimento do cliente.</p>
+
+                        <div class="form-group" style="margin-top: 14px;">
+                            <label for="adminDate">Data</label>
+                            <input type="date" id="adminDate">
+                        </div>
+
+                        <div class="slots-grid admin-slots" id="adminSlotsGrid">
+                            <p class="select-prompt">Selecione uma data.</p>
+                        </div>
+
+                        <div class="add-slot-row">
+                            <input type="time" id="customTimeInput">
+                            <button type="button" id="btnAddCustomTime" class="secondary-btn">+ Adicionar Horário</button>
+                        </div>
+                        <div class="legend-row">
+                            <span class="legend-dot state-fechado"></span> Fechado
+                            <span class="legend-dot state-livre"></span> Livre
+                            <span class="legend-dot state-reservado"></span> Reservado
+                        </div>
+                    </div>
+
+                    <!-- ESTATÍSTICAS -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="step-badge">📊</span>
+                            <h2>Resumo</h2>
+                        </div>
+                        <div class="stats-column">
+                            <div class="stat-item">
+                                <span>Agendamentos Confirmados:</span>
+                                <strong id="statTotalCount">0</strong>
+                            </div>
+                            <div class="stat-item">
+                                <span>Faturamento Acumulado:</span>
+                                <strong id="statTotalRevenue">R$ 0,00</strong>
+                            </div>
+                        </div>
+
+                        <div class="card-header" style="margin-top: 24px;">
+                            <span class="step-badge">🛠️</span>
+                            <h2>Gerenciar Serviços</h2>
+                        </div>
+                        <form id="serviceForm" class="service-form">
+                            <input type="text" id="newServiceName" placeholder="Nome do serviço" required>
+                            <input type="number" id="newServicePrice" placeholder="Preço (R$)" min="0" step="0.01" required>
+                            <input type="text" id="newServiceDuration" placeholder="Duração (ex: 45 min)" required>
+                            <button type="submit" class="secondary-btn">+ Adicionar</button>
+                        </form>
+                        <div id="adminServicesList" class="admin-services-list"></div>
+                    </div>
+
+                </div>
+
+                <!-- LISTA DE AGENDAMENTOS -->
+                <div class="card admin-appointments-card" style="margin-top: 24px;">
+                    <div class="card-header">
+                        <h2>Agendamentos Confirmados</h2>
+                    </div>
+                    <div id="adminAppointmentsList" class="appointments-list">
+                        <p class="select-prompt">Carregando...</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
