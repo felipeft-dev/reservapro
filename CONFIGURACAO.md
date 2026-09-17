@@ -1,8 +1,9 @@
 # Configuração do ReservaPro (Firebase — plano gratuito)
 
-Este sistema usa o **Firebase Firestore** (banco de dados em nuvem, tempo real) e o
-**Firebase Authentication** (login do proprietário). O plano gratuito (Spark) é suficiente
-para a maioria dos pequenos negócios.
+Este sistema usa o **Firebase Firestore** (banco de dados em nuvem, tempo real). O login
+do Painel do Proprietário é feito de forma simples, com usuário e senha definidos direto
+no `script.js` (sem precisar do Firebase Authentication). O plano gratuito (Spark) do
+Firebase é suficiente para a maioria dos pequenos negócios.
 
 ## 1. Criar o projeto no Firebase
 
@@ -16,14 +17,32 @@ para a maioria dos pequenos negócios.
 3. Escolha a localização mais próxima (ex: `southamerica-east1` para o Brasil).
 4. Inicie em **modo de produção** (vamos configurar as regras no passo 5).
 
-## 3. Ativar o login do proprietário (Authentication)
+## 3. Definir o usuário e senha do login (versão simples)
 
-1. No menu lateral, vá em **Compilação → Authentication**.
-2. Clique em **"Começar"**.
-3. Ative o provedor **"E-mail/senha"**.
-4. Na aba **"Users"**, clique em **"Add user"** e crie o e-mail e senha que o
-   proprietário vai usar para entrar no Painel do Proprietário. Guarde essas
-   credenciais — é o login do site.
+Esta versão **não usa** o Firebase Authentication — o login do Painel do
+Proprietário é feito por um usuário e senha fixos escritos direto no
+`script.js`. É bem mais simples de configurar (não precisa mexer em
+Authentication nem em chaves de API), mas é importante entender a diferença:
+
+> ⚠️ **O que essa proteção cobre e o que não cobre:** o login impede que
+> alguém sem a senha *veja e use a tela* do Painel do Proprietário. Mas como
+> não existe mais um usuário autenticado de verdade no Firebase, as regras do
+> Firestore (passo 5) precisam ficar abertas para leitura/escrita — ou seja,
+> alguém que soubesse o endereço do seu banco de dados e tivesse conhecimento
+> técnico poderia, em teoria, ler ou alterar os dados diretamente, sem passar
+> pela senha do site. Para a grande maioria dos pequenos negócios esse risco é
+> baixo (o banco não é anunciado nem indexado publicamente), mas se um dia
+> quiser a segurança completa, dá pra voltar para o Firebase Authentication.
+
+Para configurar, abra o `script.js` e altere estas duas linhas (procure por
+`AUTENTICAÇÃO DO ADMIN`):
+
+```js
+const ADMIN_USERNAME = "admin";
+const ADMIN_PASSWORD = "troque-esta-senha";
+```
+
+Troque pelos valores que o proprietário vai usar para entrar no painel.
 
 ## 4. Pegar as chaves do projeto e colar no `script.js`
 
@@ -57,28 +76,19 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Serviços: qualquer visitante pode ler; só o admin logado pode criar/editar/remover
+    // Sem Firebase Authentication, não existe "usuário logado" que o
+    // Firestore reconheça — a proteção do painel é só a senha na tela
+    // (script.js). Por isso a leitura e a escrita ficam abertas aqui.
     match /servicos/{servicoId} {
-      allow read: if true;
-      allow write: if request.auth != null;
+      allow read, write: if true;
     }
 
-    // Grade de horários: leitura pública (cliente vê o que está aberto).
-    // Criar/remover a grade: só admin.
-    // Atualizar: admin pode tudo; o cliente só pode alterar o campo "horarios"
-    // (é isso que acontece quando ele reserva um horário pelo site).
     match /horarios_liberados/{data} {
-      allow read: if true;
-      allow create, delete: if request.auth != null;
-      allow update: if request.auth != null ||
-                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['horarios']);
+      allow read, write: if true;
     }
 
-    // Agendamentos: qualquer cliente pode criar uma reserva.
-    // Ler a lista completa, editar ou cancelar: só o admin logado.
     match /agendamentos/{agendamentoId} {
-      allow create: if true;
-      allow read, update, delete: if request.auth != null;
+      allow read, write: if true;
     }
   }
 }
@@ -86,11 +96,13 @@ service cloud.firestore {
 
 3. Clique em **"Publicar"**.
 
-> **Nota de segurança:** essas regras já impedem que um estranho leia a lista de
-> clientes ou mexa no catálogo de serviços sem estar logado como admin. Para um
-> negócio maior, recomenda-se evoluir para Cloud Functions para validar cada
-> reserva no servidor — mas para a maioria dos pequenos negócios essas regras
-> são suficientes.
+> **Nota de segurança:** com essas regras, o banco de dados em si fica
+> acessível para quem souber o `projectId` e mexer diretamente com o SDK do
+> Firebase (bem mais trabalhoso que só usar o site, mas tecnicamente possível).
+> A senha do `script.js` protege o uso normal do painel pelo navegador. Se no
+> futuro quiser fechar essa brecha por completo, o caminho é voltar a usar o
+> Firebase Authentication (como na versão anterior deste guia) com regras
+> baseadas em `request.auth != null`.
 
 ## 6. Cadastrar os primeiros serviços
 

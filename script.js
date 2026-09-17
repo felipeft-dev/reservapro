@@ -1,33 +1,26 @@
 // ============================================================================
-// RESERVAPRO — LÓGICA PRINCIPAL (Firebase Firestore + Auth)
+// RESERVAPRO — LÓGICA PRINCIPAL (Firebase Firestore + login simples)
 // ============================================================================
 // PASSO 1: Cole aqui a configuração do SEU projeto Firebase.
 // Veja o passo a passo completo em CONFIGURACAO.md
 // ============================================================================
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+import {
+    getFirestore, collection, doc, getDoc, setDoc, addDoc, deleteDoc,
+    updateDoc, onSnapshot, query, orderBy, runTransaction, deleteField
+} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyDudFUwoqwPOb2oTfVEDcyI4h8OgZgbWr4",
-  authDomain: "reservapro-minhaempresa.firebaseapp.com",
-  projectId: "reservapro-minhaempresa",
-  storageBucket: "reservapro-minhaempresa.firebasestorage.app",
-  messagingSenderId: "1034441880565",
-  appId: "1:1034441880565:web:73d7bdc0267884b76e66bc",
-  measurementId: "G-W373CBWV6Y"
+    apiKey: "COLE_AQUI_SUA_API_KEY",
+    authDomain: "SEU_PROJETO.firebaseapp.com",
+    projectId: "SEU_PROJETO",
+    storageBucket: "SEU_PROJETO.appspot.com",
+    messagingSenderId: "SEU_SENDER_ID",
+    appId: "SEU_APP_ID"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-
 const db = getFirestore(app);
-const auth = getAuth(app);
 
 document.addEventListener("DOMContentLoaded", () => {
     "use strict";
@@ -398,36 +391,54 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // ========================================================================
-    // AUTENTICAÇÃO DO ADMIN
+    // AUTENTICAÇÃO DO ADMIN (login simples, usuário/senha fixos aqui no código)
     // ========================================================================
-    loginForm?.addEventListener("submit", async (e) => {
+    // ⚠️ Troque estes valores antes de publicar. Isso protege só a TELA do
+    // painel — não é uma segurança de servidor de verdade (veja o aviso no
+    // CONFIGURACAO.md). Qualquer nome de usuário/senha serve, sem espaços.
+    const ADMIN_USERNAME = "admin";
+    const ADMIN_PASSWORD = "troque-esta-senha";
+
+    const SESSION_KEY = "reservapro_admin_logado";
+
+    function showAdminPanel() {
+        adminLogin.classList.add("hidden");
+        adminPanel.classList.remove("hidden");
+        subscribeAppointments();
+    }
+
+    function showAdminLogin() {
+        adminLogin.classList.remove("hidden");
+        adminPanel.classList.add("hidden");
+        if (adminDateUnsub) { adminDateUnsub(); adminDateUnsub = null; }
+    }
+
+    loginForm?.addEventListener("submit", (e) => {
         e.preventDefault();
         loginError.textContent = "";
-        const email = $("#adminEmail").value.trim();
+        const username = $("#adminUsername").value.trim();
         const password = $("#adminPassword").value;
 
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
+        if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+            sessionStorage.setItem(SESSION_KEY, "true");
             loginForm.reset();
-        } catch (err) {
-            console.error("Erro de login:", err);
-            loginError.textContent = "E-mail ou senha inválidos.";
-        }
-    });
-
-    btnLogout?.addEventListener("click", () => signOut(auth));
-
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            adminLogin.classList.add("hidden");
-            adminPanel.classList.remove("hidden");
-            subscribeAppointments();
+            showAdminPanel();
         } else {
-            adminLogin.classList.remove("hidden");
-            adminPanel.classList.add("hidden");
-            if (adminDateUnsub) { adminDateUnsub(); adminDateUnsub = null; }
+            loginError.textContent = "Usuário ou senha inválidos.";
         }
     });
+
+    btnLogout?.addEventListener("click", () => {
+        sessionStorage.removeItem(SESSION_KEY);
+        showAdminLogin();
+    });
+
+    // Mantém o login enquanto a aba do navegador estiver aberta
+    if (sessionStorage.getItem(SESSION_KEY) === "true") {
+        showAdminPanel();
+    } else {
+        showAdminLogin();
+    }
 
     // ========================================================================
     // GESTÃO DE HORÁRIOS — PAINEL ADMIN
@@ -589,4 +600,3 @@ document.addEventListener("DOMContentLoaded", () => {
     renderTimeSlotsForClient();
     updateSummary();
 });
-
