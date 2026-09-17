@@ -397,7 +397,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // painel — não é uma segurança de servidor de verdade (veja o aviso no
     // CONFIGURACAO.md). Qualquer nome de usuário/senha serve, sem espaços.
     const ADMIN_USERNAME = "admin";
-    const ADMIN_PASSWORD = "troque-esta-senha";
+    const ADMIN_PASSWORD = "1277";
 
     const SESSION_KEY = "reservapro_admin_logado";
 
