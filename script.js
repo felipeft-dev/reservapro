@@ -11,12 +11,12 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey: "COLE_AQUI_SUA_API_KEY",
-    authDomain: "SEU_PROJETO.firebaseapp.com",
-    projectId: "SEU_PROJETO",
-    storageBucket: "SEU_PROJETO.appspot.com",
-    messagingSenderId: "SEU_SENDER_ID",
-    appId: "SEU_APP_ID"
+    apiKey: "AIzaSyA_jg4xPyvpxBVO1ee6pyYNg4atwaZ1Zno",
+    authDomain: "reservapro-suaempresa.firebaseapp.com",
+    projectId: "reservapro-suaempresa",
+    storageBucket: "reservapro-suaempresa.firebasestorage.app",
+    messagingSenderId: "900251826650",
+    appId: "1:900251826650:web:4878120c6b0930e25c28e3"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -396,8 +396,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // ⚠️ Troque estes valores antes de publicar. Isso protege só a TELA do
     // painel — não é uma segurança de servidor de verdade (veja o aviso no
     // CONFIGURACAO.md). Qualquer nome de usuário/senha serve, sem espaços.
-    const ADMIN_USERNAME = "admin";
-    const ADMIN_PASSWORD = "1277";
+    const ADMIN_USERNAME = "proprietario";
+    const ADMIN_PASSWORD = "poAdeowy6IA1W5";
 
     const SESSION_KEY = "reservapro_admin_logado";
 
