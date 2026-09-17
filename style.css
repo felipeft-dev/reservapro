@@ -170,6 +170,10 @@ button {
 }
 
 /* CARDS E GRID */
+.hidden {
+    display: none !important;
+}
+
 .view-section.hidden {
     display: none;
 }
